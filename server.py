@@ -11,7 +11,7 @@ async def update_system()->str:
     distribution_name = distro.name()
     if distribution_name.find("Arch")!=-1:
         print("Checking updates...,file=sys.stderr)")
-        process = subprocess.run("pkexec sudo pacman -Syu --noconfirm".split(),stdout=sys.stderr)
+        process = subprocess.run("pkexec sudo pacman -Syu --noconfirm".split(),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         errors = process.stderr
         if errors:
             errors =errors.decode()
@@ -33,7 +33,7 @@ async def install_package(package:str)->str:
     distribution_name = distro.name()
     if distribution_name.find("Arch")!=-1:
         print("Installing package...",file=sys.stderr)
-        process = subprocess.run(f"pkexec sudo pacman -S {package} --noconfirm".split(),stdout=sys.stderr)
+        process = subprocess.run(f"pkexec sudo pacman -S {package} --noconfirm".split(),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         errors = process.stderr
         if errors:
             errors =errors.decode()
@@ -54,7 +54,7 @@ async def uninstall_package(package:str)->str:
     distribution_name = distro.name()
     if distribution_name.find("Arch")!=-1:
         print("Uninstalling package...",file=sys.stderr)
-        process = subprocess.run(f"pkexec sudo pacman -R {package} --noconfirm".split(),stdout=sys.stderr)
+        process = subprocess.run(f"pkexec sudo pacman -R {package} --noconfirm".split(),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         errors = process.stderr
         if errors:
             errors =errors.decode()
@@ -75,11 +75,11 @@ async def check_package(package:str)->str:
     distribution_name = distro.name()
     if distribution_name.find("Arch")!=-1:
         print("Checking package...",file=sys.stderr)
-        process = subprocess.run(f"pkexec sudo pacman -Q {package}".split(),stdout=sys.stderr)
+        process = subprocess.run(f"pkexec sudo pacman -Q {package}".split(),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         errors = process.stderr
         if errors:
             errors =errors.decode()
-            print(errors,file=sys.stderr)
+            return errors
         prompt = process.stdout
         if prompt:
             prompt = prompt.decode()
@@ -96,7 +96,7 @@ async def remove_orphan_package()->str:
     distribution_name = distro.name()
     if distribution_name.find("Arch")!=-1:
         print("Removing orphan package...",file=sys.stderr)
-        process = subprocess.run(f"pkexec sudo pacman -Rns $(pacman -Qdtq) --noconfirm".split(),stdout=sys.stderr)
+        process = subprocess.run(f"pkexec sudo pacman -Rns $(pacman -Qdtq) --noconfirm".split(),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         errors = process.stderr
         if errors:
             errors =errors.decode()
@@ -117,11 +117,11 @@ async def manage_service(service:str,action:str)->str:
     distribution_name = distro.name()
     if distribution_name.find("Arch")!=-1:
         print("Managing service...",file=sys.stderr)
-        process = subprocess.run(f"pkexec sudo systemctl {action} {service}".split(),stdout=sys.stderr)
+        process = subprocess.run(f"pkexec sudo systemctl {action} {service}".split(),stderr=subprocess.PIPE,stdout=subprocess.PIPE)
         errors = process.stderr
         if errors:
             errors =errors.decode()
-            print(errors,file=sys.stderr)
+            return
         prompt = process.stdout
         if prompt:
             prompt = prompt.decode()
@@ -138,11 +138,11 @@ async def check_service_status(service:str)->str:
     distribution_name = distro.name()
     if distribution_name.find("Arch")!=-1:
         print("Checking service status...",file=sys.stderr)
-        process = subprocess.run(f"pkexec sudo systemctl status {service}".split(),stdout=sys.stderr)
+        process = subprocess.run(f"pkexec sudo systemctl status {service}".split(),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         errors = process.stderr
         if errors:
             errors =errors.decode()
-            print(errors,file=sys.stderr)
+            return errors
         prompt = process.stdout
         if prompt:
             prompt = prompt.decode()
@@ -159,7 +159,7 @@ async def add_locale(locale:str)->str:
     distribution_name = distro.name()
     if distribution_name.find("Arch")!=-1:
         print("Adding locale...",file=sys.stderr)
-        process = subprocess.run(f"pkexec sudo localectl set-locale {locale}".split(),stdout=sys.stderr)
+        process = subprocess.run(f"pkexec sudo localectl set-locale {locale}".split(),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         errors = process.stderr
         if errors:
             errors =errors.decode()
@@ -180,7 +180,7 @@ async def sync_system_time()->str:
     distribution_name = distro.name()
     if distribution_name.find("Arch")!=-1:
         print("Syncing system time...",file=sys.stderr)
-        process = subprocess.run(f"pkexec sudo timedatectl set-ntp true".split(),stdout=sys.stderr)
+        process = subprocess.run(f"pkexec sudo timedatectl set-ntp true".split(),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         errors = process.stderr
         if errors:
             errors =errors.decode()
@@ -202,7 +202,7 @@ async def add_user(username:str,password:str,groups:str,shell:str,home:str,email
     distribution_name = distro.name()
     if distribution_name.find("Arch")!=-1:
         print("Adding user...",file=sys.stderr)
-        process = subprocess.run(f"pkexec sudo useradd -m -p {password} -G {groups} -s {shell} -d {home} -e {email} {username}".split(),stdout=sys.stderr)
+        process = subprocess.run(f"pkexec sudo useradd -m -p {password} -G {groups} -s {shell} -d {home} -e {email} {username}".split(),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         errors = process.stderr
         if errors:
             errors =errors.decode()
@@ -223,7 +223,7 @@ async def delete_user(username:str)->str:
     distribution_name = distro.name()
     if distribution_name.find("Arch")!=-1:
         print("Deleting user...",file=sys.stderr)
-        process = subprocess.run(f"pkexec sudo userdel -r {username}".split(),stdout=sys.stderr)
+        process = subprocess.run(f"pkexec sudo userdel -r {username}".split(),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         errors = process.stderr
         if errors:
             errors =errors.decode()
