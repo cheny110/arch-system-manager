@@ -4,7 +4,6 @@ import sys
 import distro
 import subprocess
 mcp = FastMCP("arch-system-manager")
-
 @mcp.tool(description="Update system")
 async def update_system()->str:
     print("Checking platform...",file=sys.stderr)
@@ -163,7 +162,7 @@ async def add_locale(locale:str)->str:
         errors = process.stderr
         if errors:
             errors =errors.decode()
-            print(errors,file=sys.stderr)
+            return errors
         prompt = process.stdout
         if prompt:
             prompt = prompt.decode()
@@ -184,7 +183,7 @@ async def sync_system_time()->str:
         errors = process.stderr
         if errors:
             errors =errors.decode()
-            print(errors,file=sys.stderr)
+            return errors
         prompt = process.stdout
         if prompt:
             prompt = prompt.decode()
@@ -197,16 +196,22 @@ async def sync_system_time()->str:
 
 
 @mcp.tool(description="Add user")
-async def add_user(username:str,password:str,groups:str,shell:str,home:str,email:str)->str:
+async def add_user(username:str,password:str,groups:str=None,shell:str=None)->str:
     print("Checking platform...",file=sys.stderr)
     distribution_name = distro.name()
     if distribution_name.find("Arch")!=-1:
         print("Adding user...",file=sys.stderr)
-        process = subprocess.run(f"pkexec sudo useradd -m -p {password} -G {groups} -s {shell} -d {home} -e {email} {username}".split(),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        cmd =f"pkexec sudo useradd -m -p {password}"
+        if groups:
+            cmd += f" -G {groups}"
+        if shell:
+            cmd += f" -s {shell}"
+        cmd += f" -d /home/{username} {username}"
+        process = subprocess.run(cmd.split(),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         errors = process.stderr
         if errors:
             errors =errors.decode()
-            print(errors,file=sys.stderr)
+            return errors
         prompt = process.stdout
         if prompt:
             prompt = prompt.decode()
@@ -227,16 +232,54 @@ async def delete_user(username:str)->str:
         errors = process.stderr
         if errors:
             errors =errors.decode()
-            print(errors,file=sys.stderr)
+            return errors
         prompt = process.stdout
         if prompt:
             prompt = prompt.decode()
             return prompt
 
         return f"{username} deleted successfully."
+    else:
+        return f"linux {distribution_name} is not supported platform."
+
+@mcp.tool(description="Download file")
+async def download_file(url:str,save_path:str)->str:
+    print("Checking platform...",file=sys.stderr)
+    distribution_name = distro.name()
+    if distribution_name.find("Arch")!=-1:
+        process = subprocess.run(f"pkexec sudo wget {url} -O {save_path}".split(),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        errors = process.stderr
+        if errors:
+            errors =errors.decode()
+            return errors
+        prompt = process.stdout
+        if prompt:
+            prompt = prompt.decode()
+            return prompt
+
+        return f"File downloaded successfully."
 
     else:
         return f"linux {distribution_name} is not supported platform."
+
+@mcp.tool(description="execute command")
+async def execute_command(command:str,privileged:bool=False)->str:
+    print("Checking platform...",file=sys.stderr)
+    distribution_name = distro.name()
+    if distribution_name.find("Arch")!=-1:
+        if privileged:
+            command = f"pkexec sudo {command}"
+        process = subprocess.run(command.split(),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        errors = process.stderr
+        if errors:
+            errors =errors.decode()
+            return errors
+        prompt = process.stdout
+        if prompt:
+            prompt = prompt.decode()
+            return prompt
+
+        return f"Command executed successfully."
 
 
 if __name__=="__main__":
